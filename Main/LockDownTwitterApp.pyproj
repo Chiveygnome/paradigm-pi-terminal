@@ -23,13 +23,15 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Exceptions.py">
+    <Compile Include="Utils\FileManager.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MainWindow.py" />
-    <Compile Include="Threads.py">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Utils\Exceptions.py" />
+    <Compile Include="Utils\Threads.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Utils\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
