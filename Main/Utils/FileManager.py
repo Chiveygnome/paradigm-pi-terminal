@@ -2,7 +2,8 @@ import os
 import sys
 import threading
 import Queue
-from Exceptions import FileNotFoundException
+from time import gmtime, strftime
+from Utils.Exceptions import FileNotFoundException
 
 RUNTIME_DIR = "run-time"
 
@@ -57,10 +58,6 @@ class LogManager():
 
     def beginShutdown(self):
         self.shutdown = True
-    # Get call stack up one level to gather information
-    def error(self, err):
-        
-        self._log("{0} {1}".format())
 
 """
     This class is a thread that logs all events passed to it to /RUNTIME_DIR/log.log.
@@ -84,10 +81,40 @@ class _LogWriter(threading.Thread):
             self.__logFile.write(self.__log.get())
         self.__logFile.close()
 
+
+"""
+    Every class that has loggable events should have a member variable with
+    a copy of this thread so as to log to a log file.
+    
+    Any class that calls this thread should not do so through the start function,
+    however, they should call this from a given log function.
+"""
 class ClassLogger(threading.Thread):
 
     self.__manager = None
     self.__message = ""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, manager, *args, **kwargs):
         super(ClassLogger, self).__init__(args, kwargs)
+        self.__manager = manager
+
+    def run(self):
+        if self.__message is not "":
+            self.__manager._log(self.__message)
+            self.__message = ""
+
+    def _log(self, level, scope, message):
+        self.__message = "{0}: {1} at {2}: {3}".format(strftime("%Y-%m-%d %H:%M:%S", gmtime()), level, scope, message)
+        self.start()
+
+    def debug(self, message):
+        self._log("DEBUG",sys._getframe(1).f_code.co_name, message)
+
+    def warn(self, message):
+        self._log("WARNING",sys._getframe(1).f_code.co_name, message)
+
+    def error(self, message):
+        self._log("ERROR",sys._getframe(1).f_code.co_name, message)
+
+    def info(self, message):
+        self._log("INFO",sys._getframe(1).f_code.co_name, message)
