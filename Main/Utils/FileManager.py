@@ -3,7 +3,7 @@ import sys
 import threading
 import Queue
 from time import gmtime, strftime
-from Utils.Exceptions import FileNotFoundException
+from Exceptions import FileNotFoundException
 
 RUNTIME_DIR = "run-time"
 
@@ -36,7 +36,7 @@ class ConfigManager():
                         self.__valDict[pair[0]] = pair[1]
                     else:
                         raise SyntaxError("Invalid key-value pair found.  Line: {}".format(line))
-                return
+                return self.__valDict
         raise FileNotFoundException("Config.cfg not found.  Exiting...")
 
     def getValue(self, key):

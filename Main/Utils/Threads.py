@@ -11,6 +11,7 @@ class _TwitterCallAbstract(threading.Thread):
         super(_TwitterCallAbstract, self).__init(args, kwargs)
         self.logger = logger
         self._message = message
+        logger.info("Setting up python-twitter api")
         self._api = twitter.Api(consumer_key=cKey, consumer_secret=cSecret,
                                 access_token_key=aKey, access_token_secret=aSecret)
 

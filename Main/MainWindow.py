@@ -1,5 +1,6 @@
 import sys
 from PySide import QtCore, QtGui
+import FileManager
 
 """
     This is the main window of the program.  As of 5/7/17, this has a few bugs.
@@ -48,10 +49,17 @@ class MainWidget(QtGui.QWidget):
     # This is a slot for the signal textChanged in the QTextBox class
     def onTextChanged(self):
         length = len(self.box.toPlainText())
+        diff = MAX_LENGTH - length
         if( length > MAX_LENGTH ):
+            diff = 0
             self.box.setPlainText(self.box.toPlainText()[0:MAX_LENGTH])
-            self.box.textCursor().movePosition(QtGui.QTextCursor.End, QtGui.QTextCursor.MoveAnchor)
+            # why doesn't this statement work?
+            # This is supposed to leave the text cursor at the end of the text if the text fills up, however it does not
+            self.box.textCursor().setPosition(139, QtGui.QTextCursor.KeepAnchor)
+        self.charsLeftLine.setText("{0} characters left".format(diff))
 
+    def onButtonPress(self):
+        
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     window = QtGui.QMainWindow()
