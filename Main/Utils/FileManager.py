@@ -3,7 +3,14 @@ import sys
 import threading
 import Queue
 from time import gmtime, strftime
+from colorama import init
 from Exceptions import FileNotFoundException
+
+"""
+    This module contains all file and logging operations.  
+    'Yea, though I walk through the valley of death I will fear
+    no evil' or threads.  You've been warned.
+"""
 
 RUNTIME_DIR = "run-time"
 
@@ -48,10 +55,12 @@ class LogManager():
     self.__log = None
     self.__logFile = None
     self.shutdown = False
+    self.__loggers = {}
 
     def __init__(self, *args, **kwargs):
         super(LogManager, self).__init__(args, kwargs)
         self.__log = Queue.Queue()
+        init(autoreset=True)
 
     def _log(self, string):
         self.__log.put(string)
@@ -82,6 +91,7 @@ class _LogWriter(threading.Thread):
         self.__logFile.close()
 
 
+
 """
     Every class that has loggable events should have a member variable with
     a copy of this thread so as to log to a log file.
@@ -103,18 +113,23 @@ class ClassLogger(threading.Thread):
             self.__manager._log(self.__message)
             self.__message = ""
 
-    def _log(self, level, scope, message):
+    def _log(self, level, scope, message, color):
         self.__message = "{0}: {1} at {2}: {3}".format(strftime("%Y-%m-%d %H:%M:%S", gmtime()), level, scope, message)
+        print color + self.__message
         self.start()
 
     def debug(self, message):
-        self._log("DEBUG",sys._getframe(1).f_code.co_name, message)
+        # last argument is white
+        self._log("DEBUG",sys._getframe(1).f_code.co_name, message,"\033[37m")
 
     def warn(self, message):
-        self._log("WARNING",sys._getframe(1).f_code.co_name, message)
+        # last argument is yellow
+        self._log("WARNING",sys._getframe(1).f_code.co_name, message, "\033[43m")
 
     def error(self, message):
-        self._log("ERROR",sys._getframe(1).f_code.co_name, message)
+        # last argument is red
+        self._log("ERROR",sys._getframe(1).f_code.co_name, message, "\033[31m")
 
     def info(self, message):
-        self._log("INFO",sys._getframe(1).f_code.co_name, message)
+        # last argument is white
+        self._log("INFO",sys._getframe(1).f_code.co_name, message, "\033[37m")
