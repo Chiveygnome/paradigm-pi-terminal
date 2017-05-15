@@ -29,6 +29,10 @@
     <Compile Include="MainWindow.py" />
     <Compile Include="Utils\Exceptions.py" />
     <Compile Include="Utils\Threads.py" />
+    <Compile Include="Utils\__init__.py" />
+    <Compile Include="__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Utils\" />

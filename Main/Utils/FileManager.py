@@ -2,9 +2,11 @@ import os
 import sys
 import threading
 import Queue
+from collections import deque
 from time import gmtime, strftime
 from colorama import init
 from Exceptions import FileNotFoundException
+import exceptions
 
 """
     This module contains all file and logging operations.  
@@ -22,11 +24,11 @@ RUNTIME_DIR = "run-time"
 """
 class ConfigManager():
     
-    self.__cfgFile = None
-    self.__valDict = {}
 
     def __init__(self, *args, **kwargs):
         super(ConfigManager, self).__init__(args, kwargs)
+        self.__cfgFile = None
+        self.__valDict = {}
         for dir in os.walk(os.getcwd())[1]:
             if dir is RUNTIME_DIR:
                 self._readConfig(os.path.join(os.getcwd(), RUNTIME_DIR))
@@ -50,15 +52,13 @@ class ConfigManager():
         return self.__valDict.get(key)
 
 
-class LogManager():
+class LogManager(object):
 
-    self.__log = None
-    self.__logFile = None
-    self.shutdown = False
-    self.__loggers = {}
-
-    def __init__(self, *args, **kwargs):
-        super(LogManager, self).__init__(args, kwargs)
+    def __init__(self):
+        super(LogManager, self).__init__()
+        self.__logFile = None
+        self.shutdown = False
+        self.__loggers = {}
         self.__log = Queue.Queue()
         init(autoreset=True)
 
@@ -68,20 +68,26 @@ class LogManager():
     def beginShutdown(self):
         self.shutdown = True
 
+    def createLogger(self, name):
+        try:
+            self.__loggers[name]
+            raise KeyError("Logger by that name already exists in memory")
+        except:
+            self.__loggers[name] = ClassLogger(self)
+            return self.__loggers[name]
+
 """
     This class is a thread that logs all events passed to it to /RUNTIME_DIR/log.log.
     Caution must be taken when stopping this thread, because of the file operations.
 """
 class _LogWriter(threading.Thread):
     
-    self.__log = None
-    self.__logFile = None
-    self.shutdown = False
     
     def __init__(self, queue , *args, **kwargs):
         super(_LogWriter, self).__init__(args, kwargs)
         self.__logFile = open(os.path.join(RUNTIME_DIR,"log.log"), "a")
         self.__log = queue
+        self.shutdown = False
 
     def run():
         while not self.shudown:
@@ -101,22 +107,21 @@ class _LogWriter(threading.Thread):
 """
 class ClassLogger(threading.Thread):
 
-    self.__manager = None
-    self.__message = ""
-
     def __init__(self, manager, *args, **kwargs):
-        super(ClassLogger, self).__init__(args, kwargs)
+        super(ClassLogger, self).__init__(*args, **kwargs)
         self.__manager = manager
+        self.__messages = deque()
+        self.__shutdown = False
 
     def run(self):
-        if self.__message is not "":
-            self.__manager._log(self.__message)
-            self.__message = ""
+        while not self.shutdown:
+            if self.__messages.count() is not 0:
+                self.__manager._log(self.__message)
+                self.__message = ""
 
     def _log(self, level, scope, message, color):
-        self.__message = "{0}: {1} at {2}: {3}".format(strftime("%Y-%m-%d %H:%M:%S", gmtime()), level, scope, message)
+        self.__messages = "{0}: {1} at {2}: {3}".format(strftime("%Y-%m-%d %H:%M:%S", gmtime()), level, scope, message)
         print color + self.__message
-        self.start()
 
     def debug(self, message):
         # last argument is white
@@ -133,3 +138,6 @@ class ClassLogger(threading.Thread):
     def info(self, message):
         # last argument is white
         self._log("INFO",sys._getframe(1).f_code.co_name, message, "\033[37m")
+
+    def shutdown(self):
+        self.shutdown = True

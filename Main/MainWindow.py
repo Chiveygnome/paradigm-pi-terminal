@@ -1,6 +1,8 @@
+#!/usr/bin/python2
 import sys
+import os
 from PySide import QtCore, QtGui
-import FileManager
+import Utils.FileManager as FileManager
 
 """
     This program requires the Pyside module (Python Qt wrapper) and
@@ -9,7 +11,9 @@ import FileManager
     of your choice and install them on your machine. - Ernie
     
     This is the main window of the program.  As of 5/7/17, this has a few bugs.
-    The qtextbox doesn't move the cursor correctly, kind of breaking the text input.
+    The qtextbox doesn't move the cursor correctly, kind of breaking the text input
+    and currently python doesn't like some of the current implementations for logging.
+    These are being changed.
 """
 MAX_LENGTH = 140
 class MainWidget(QtGui.QWidget):
@@ -25,7 +29,7 @@ class MainWidget(QtGui.QWidget):
         self._logger.info("Gui set up complete")
 
     def setupTextBox(self, layout):
-        logger.info("Setting up gui...")
+        self._logger.info("Setting up gui...")
         self.box = QtGui.QPlainTextEdit(parent=self)
         self.box.setLineWidth(80)
         self.box.setLineWrapMode(QtGui.QPlainTextEdit.LineWrapMode.WidgetWidth)
@@ -76,6 +80,6 @@ if __name__ == '__main__':
     logManager = FileManager.LogManager()
     # started including logging
     window = QtGui.QMainWindow()
-    window.setCentralWidget(MainWidget())
+    window.setCentralWidget(MainWidget(logManager.createLogger(MainWidget.__class__.__name__)))
     window.show()
     app.exec_()
